@@ -15,7 +15,7 @@ def load_kadai():
 
 def save_kadai(kadai_list):
     with open(FILENAME, "w", encoding="utf-8", newline="") as f:
-        writer = csv.DictWriter(f, fieldnames=["課題名", "科目", "締め切り", "完了"])
+        writer = csv.DictWriter(f, fieldnames=["課題名", "科目", "締め切り", "完了", "優先度"])
         writer.writeheader()
         writer.writerows(kadai_list)
 
@@ -35,9 +35,12 @@ def print_kadai(kadai_list, filter_subject=None):
     title = f"--- {filter_subject}の課題一覧 ---" if filter_subject else "--- 課題一覧（締め切り順）---"
     print(f"\n{title}")
     today = date.today()
+    priority_icon = {"高": "🔴", "中": "🟡", "低": "🟢"}
     for i, kadai in enumerate(target, 1):
         kanryo = "✓" if kadai["完了"] == "True" else " "
         deadline = kadai["締め切り"]
+        priority = kadai.get("優先度", "中")
+        icon = priority_icon.get(priority, "🟡")
         try:
             days_left = (date.fromisoformat(deadline) - today).days
             if kadai["完了"] == "True":
@@ -50,7 +53,7 @@ def print_kadai(kadai_list, filter_subject=None):
                 nokori = f"あと{days_left}日"
         except:
             nokori = ""
-        print(f"{i}. [{kanryo}] [{kadai['科目']}] {kadai['課題名']} (締め切り: {deadline} / {nokori})")
+        print(f"{i}. [{kanryo}] {icon} [{kadai['科目']}] {kadai['課題名']} (締め切り: {deadline} / {nokori})")
 
 def check_alerts(kadai_list):
     today = date.today()
@@ -73,6 +76,11 @@ def get_subjects(kadai_list):
             subjects.append(kadai["科目"])
     return subjects
 
+def input_priority():
+    print("優先度を選んでください: 1: 高  2: 中  3: 低")
+    p = input("番号を入力: ")
+    return {"1": "高", "2": "中", "3": "低"}.get(p, "中")
+
 kadai_list = load_kadai()
 
 # 起動時にアラートチェック
@@ -92,9 +100,10 @@ while True:
     print("1: 課題を追加")
     print("2: 課題一覧を見る")
     print("3: 科目でフィルタリング")
-    print("4: 課題を完了にする")
-    print("5: 課題を削除する")
-    print("6: 終了")
+    print("4: 課題を編集する")
+    print("5: 課題を完了にする")
+    print("6: 課題を削除する")
+    print("7: 終了")
 
     choice = input("番号を選んでください: ")
 
@@ -102,7 +111,8 @@ while True:
         name = input("課題名: ")
         subject = input("科目名: ")
         deadline = input("締め切り日 (例: 2025-07-01): ")
-        kadai_list.append({"課題名": name, "科目": subject, "締め切り": deadline, "完了": "False"})
+        priority = input_priority()
+        kadai_list.append({"課題名": name, "科目": subject, "締め切り": deadline, "完了": "False", "優先度": priority})
         kadai_list = sort_by_deadline(kadai_list)
         save_kadai(kadai_list)
         print("追加して保存しました！")
@@ -127,6 +137,32 @@ while True:
 
     elif choice == "4":
         print_kadai(kadai_list)
+        num = input("編集する番号を入力: ")
+        try:
+            idx = int(num) - 1
+            kadai = kadai_list[idx]
+            print(f"\n現在の内容: [{kadai['科目']}] {kadai['課題名']} / 締め切り: {kadai['締め切り']} / 優先度: {kadai.get('優先度', '中')}")
+            print("変更しない項目はそのままEnterを押してね")
+            new_name = input(f"課題名 ({kadai['課題名']}): ")
+            new_subject = input(f"科目名 ({kadai['科目']}): ")
+            new_deadline = input(f"締め切り日 ({kadai['締め切り']}): ")
+            print(f"優先度 (現在: {kadai.get('優先度', '中')})")
+            new_priority = input_priority()
+            if new_name:
+                kadai["課題名"] = new_name
+            if new_subject:
+                kadai["科目"] = new_subject
+            if new_deadline:
+                kadai["締め切り"] = new_deadline
+            kadai["優先度"] = new_priority
+            kadai_list = sort_by_deadline(kadai_list)
+            save_kadai(kadai_list)
+            print("編集しました！")
+        except:
+            print("無効な番号です。")
+
+    elif choice == "5":
+        print_kadai(kadai_list)
         num = input("完了にする番号を入力: ")
         try:
             idx = int(num) - 1
@@ -136,7 +172,7 @@ while True:
         except:
             print("無効な番号です。")
 
-    elif choice == "5":
+    elif choice == "6":
         print_kadai(kadai_list)
         num = input("削除する番号を入力: ")
         try:
@@ -147,6 +183,6 @@ while True:
         except:
             print("無効な番号です。")
 
-    elif choice == "6":
+    elif choice == "7":
         print("終了します。")
         break
