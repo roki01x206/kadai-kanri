@@ -81,6 +81,13 @@ def input_priority():
     p = input("番号を入力: ")
     return {"1": "高", "2": "中", "3": "低"}.get(p, "中")
 
+def search_kadai(kadai_list,keyword):
+    result = []
+    for kadai in kadai_list:
+        if keyword in kadai["課題名"]:
+            result.append(kadai)
+    return result
+        
 kadai_list = load_kadai()
 
 # 起動時にアラートチェック
@@ -100,10 +107,11 @@ while True:
     print("1: 課題を追加")
     print("2: 課題一覧を見る")
     print("3: 科目でフィルタリング")
-    print("4: 課題を編集する")
-    print("5: 課題を完了にする")
-    print("6: 課題を削除する")
-    print("7: 終了")
+    print("4: 課題を検索する")
+    print("5: 課題を編集する")
+    print("6: 課題を完了にする")
+    print("7: 課題を削除する")
+    print("8: 終了")
 
     choice = input("番号を選んでください: ")
 
@@ -136,6 +144,19 @@ while True:
                 print("無効な番号です。")
 
     elif choice == "4":
+        keyword = input("検索キーワードを入力: ")
+        result = search_kadai(kadai_list,keyword)
+        if not result:
+            print("該当する課題が見つかりませんでした")
+        else:
+            print(f"\n---「{keyword}」の検索結果---")
+            today = date.today()
+            priority_icon = {"高": "🔴", "中": "🟡", "低": "🟢"}
+            for i, kadai in enumerate(result,1):
+                icon = priority_icon.get(kadai.get("優先度","中"),"🟡")
+                print(f"{i}. {icon} [{kadai['科目']}] {kadai['課題名']} (締め切り:{kadai['締め切り']})")
+
+    elif choice == "5":
         print_kadai(kadai_list)
         num = input("編集する番号を入力: ")
         try:
@@ -161,7 +182,7 @@ while True:
         except:
             print("無効な番号です。")
 
-    elif choice == "5":
+    elif choice == "6":
         print_kadai(kadai_list)
         num = input("完了にする番号を入力: ")
         try:
@@ -172,7 +193,7 @@ while True:
         except:
             print("無効な番号です。")
 
-    elif choice == "6":
+    elif choice == "7":
         print_kadai(kadai_list)
         num = input("削除する番号を入力: ")
         try:
@@ -183,6 +204,6 @@ while True:
         except:
             print("無効な番号です。")
 
-    elif choice == "7":
+    elif choice == "8":
         print("終了します。")
         break
