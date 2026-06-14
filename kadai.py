@@ -52,7 +52,8 @@ while True:
     print("1: 課題を追加")
     print("2: 課題一覧を見る")
     print("3: 課題を完了にする")
-    print("4: 終了")
+    print("4: 課題を削除する")
+    print("5: 終了")
 
     choice = input("番号を選んでください: ")
 
@@ -80,5 +81,16 @@ while True:
             print("無効な番号です。")
 
     elif choice == "4":
+        print_kadai(kadai_list)
+        num = input("削除する番号を入力: ")
+        try:
+            idx = int(num) - 1
+            deleted = kadai_list.pop(idx)
+            save_kadai(kadai_list)
+            print(f"「{deleted['課題名']}」を削除しました！")
+        except:
+            print("無効な番号です。")
+
+    elif choice == "5":
         print("終了します。")
         break
