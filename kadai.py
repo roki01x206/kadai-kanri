@@ -45,7 +45,33 @@ def print_kadai(kadai_list):
             nokori = ""
         print(f"{i}. [{kanryo}] [{kadai['科目']}] {kadai['課題名']} (締め切り: {deadline} / {nokori})")
 
+def check_alerts(kadai_list):
+    today = date.today()
+    alerts = []
+    for kadai in kadai_list:
+        if kadai["完了"] == "True":
+            continue
+        try:
+            days_left = (date.fromisoformat(kadai["締め切り"]) - today).days
+            if 0 <= days_left <= 3:
+                alerts.append((kadai, days_left))
+        except:
+            pass
+    return alerts
+
 kadai_list = load_kadai()
+
+# 起動時にアラートチェック
+alerts = check_alerts(kadai_list)
+if alerts:
+    print("\n⚠️  締め切りが近い課題があります！")
+    for kadai, days_left in alerts:
+        if days_left == 0:
+            print(f"  🔴 【今日まで】[{kadai['科目']}] {kadai['課題名']}")
+        elif days_left == 1:
+            print(f"  🔴 【明日まで】[{kadai['科目']}] {kadai['課題名']}")
+        else:
+            print(f"  🟡 【あと{days_left}日】[{kadai['科目']}] {kadai['課題名']}")
 
 while True:
     print("\n--- 課題管理ツール ---")
