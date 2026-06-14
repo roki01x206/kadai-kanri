@@ -22,13 +22,20 @@ def save_kadai(kadai_list):
 def sort_by_deadline(kadai_list):
     return sorted(kadai_list, key=lambda x: x["締め切り"])
 
-def print_kadai(kadai_list):
-    if len(kadai_list) == 0:
-        print("課題はまだありません。")
+def print_kadai(kadai_list, filter_subject=None):
+    if filter_subject:
+        target = [k for k in kadai_list if k["科目"] == filter_subject]
+    else:
+        target = kadai_list
+
+    if len(target) == 0:
+        print("該当する課題はありません。")
         return
-    print("\n--- 課題一覧（締め切り順）---")
+
+    title = f"--- {filter_subject}の課題一覧 ---" if filter_subject else "--- 課題一覧（締め切り順）---"
+    print(f"\n{title}")
     today = date.today()
-    for i, kadai in enumerate(kadai_list, 1):
+    for i, kadai in enumerate(target, 1):
         kanryo = "✓" if kadai["完了"] == "True" else " "
         deadline = kadai["締め切り"]
         try:
@@ -59,6 +66,13 @@ def check_alerts(kadai_list):
             pass
     return alerts
 
+def get_subjects(kadai_list):
+    subjects = []
+    for kadai in kadai_list:
+        if kadai["科目"] not in subjects:
+            subjects.append(kadai["科目"])
+    return subjects
+
 kadai_list = load_kadai()
 
 # 起動時にアラートチェック
@@ -77,9 +91,10 @@ while True:
     print("\n--- 課題管理ツール ---")
     print("1: 課題を追加")
     print("2: 課題一覧を見る")
-    print("3: 課題を完了にする")
-    print("4: 課題を削除する")
-    print("5: 終了")
+    print("3: 科目でフィルタリング")
+    print("4: 課題を完了にする")
+    print("5: 課題を削除する")
+    print("6: 終了")
 
     choice = input("番号を選んでください: ")
 
@@ -96,6 +111,21 @@ while True:
         print_kadai(kadai_list)
 
     elif choice == "3":
+        subjects = get_subjects(kadai_list)
+        if not subjects:
+            print("課題がまだありません。")
+        else:
+            print("\n登録されている科目：")
+            for i, subject in enumerate(subjects, 1):
+                print(f"{i}. {subject}")
+            num = input("絞り込む科目の番号を入力: ")
+            try:
+                idx = int(num) - 1
+                print_kadai(kadai_list, filter_subject=subjects[idx])
+            except:
+                print("無効な番号です。")
+
+    elif choice == "4":
         print_kadai(kadai_list)
         num = input("完了にする番号を入力: ")
         try:
@@ -106,7 +136,7 @@ while True:
         except:
             print("無効な番号です。")
 
-    elif choice == "4":
+    elif choice == "5":
         print_kadai(kadai_list)
         num = input("削除する番号を入力: ")
         try:
@@ -117,6 +147,6 @@ while True:
         except:
             print("無効な番号です。")
 
-    elif choice == "5":
+    elif choice == "6":
         print("終了します。")
         break
