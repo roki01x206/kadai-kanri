@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title>課題管理ツール</title>
+    <style>
+        body { font-family: sans-serif; max-width: 800px; margin: 40px auto; padding: 0 20px; }
+        h1 { color: #333; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { padding: 10px; border: 1px solid #ddd; text-align: left; }
+        th { background: #f5f5f5; }
+        .done { color: #aaa; text-decoration: line-through; }
+        .alert { color: red; font-weight: bold; }
+        form { margin-top: 30px; display: grid; gap: 10px; }
+        input, select { padding: 8px; width: 100%; box-sizing: border-box; }
+        button { padding: 10px; background: #4CAF50; color: white; border: none; cursor: pointer; }
+        button:hover { background: #45a049; }
+        a { color: #666; margin-right: 8px; }
+    </style>
+</head>
+<body>
+    <h1>📚 課題管理ツール</h1>
+
+    <table>
+        <tr>
+            <th>優先度</th><th>科目</th><th>課題名</th><th>締め切り</th><th>残り</th><th>操作</th>
+        </tr>
+        {% for i, kadai in kadai_with_index %}
+        {% set done = kadai["完了"] == "True" %}
+        {% set icon = {"高": "🔴", "中": "🟡", "低": "🟢"}[kadai.get("優先度", "中")] %}
+        <tr class="{{ 'done' if done else '' }}">
+            <td>{{ icon }}</td>
+            <td>{{ kadai["科目"] }}</td>
+            <td>{{ kadai["課題名"] }}</td>
+            <td>{{ kadai["締め切り"] }}</td>
+            <td>{{ kadai["残り"] }}</td>
+            <td>
+                {% if not done %}
+                <a href="/complete/{{ i }}">✓完了</a>
+                {% endif %}
+                <a href="/delete/{{ i }}" onclick="return confirm('削除しますか？')">🗑削除</a>
+            </td>
+        </tr>
+        {% endfor %}
+    </table>
+
+    <h2>課題を追加</h2>
+    <form action="/add" method="POST">
+        <input type="text" name="name" placeholder="課題名" required>
+        <input type="text" name="subject" placeholder="科目名" required>
+        <input type="date" name="deadline" required>
+        <select name="priority">
+            <option value="高">🔴 高</option>
+            <option value="中" selected>🟡 中</option>
+            <option value="低">🟢 低</option>
+        </select>
+        <button type="submit">追加</button>
+    </form>
+</body>
+</html>
